@@ -1,62 +1,37 @@
-import MovieApiService from './js/movie-service';
+import VideoApiService from './js/movie-service';
 
-const movieListContainer = document.querySelector('.movie-list');
-const prevButton = document.querySelector('.prev__button');
-const nextButton = document.querySelector('.next__button');
+const videoList = document.querySelector('.video__list');
+const loadMoreBtn = document.querySelector('.load-more__button');
 
-const movieApiService = new MovieApiService();
+const videoApiService = new VideoApiService();
 
-// Ініціалізація
-loadMovies();
+document.addEventListener('DOMContentLoaded', () => {
+  loadVideos();
+});
 
-// Обробники подій для кнопок пагінації
-prevButton.addEventListener('click', onPrevPage);
-nextButton.addEventListener('click', onNextPage);
+loadMoreBtn.addEventListener('click', loadVideos);
 
-function loadMovies() {
-  movieApiService
-    .fetchMovies()
-    .then(movies => renderMovies(movies.slice(0, 8)))
-    .catch(error => console.error('Error:', error));
+function loadVideos() {
+  videoApiService
+    .fetchVideos()
+    .then(renderVideos)
+    .catch(error => console.error(error));
 }
 
-function onPrevPage() {
-  movieApiService.decrementPage();
-  clearMovieList();
-  loadMovies();
-  togglePaginationButtons();
-}
-
-function onNextPage() {
-  movieApiService.incrementPage();
-  clearMovieList();
-  loadMovies();
-  togglePaginationButtons();
-}
-
-function renderMovies(movies) {
-  const markup = movies
-    .map(
-      movie => `
-       <li class="movie-item">
-          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" >
-          <h2>${movie.title}</h2>
-          <p>Original language: ${movie.original_language}</p>
-          <p>Release date: ${movie.release_date}</p>
-          <p>Origin country: ${movie.origin_country}</p>
-          <p>Rating: ${movie.vote_average}</p>
+function renderVideos(videos) {
+  const markup = videos
+    .map(video => {
+      const thumbnail = video.pictures.sizes[2]?.link || ''; // Використовуємо мініатюру (якщо доступна)
+      return `
+        <li class="video__item">
+          <a href="${video.link}" target="_blank" rel="noopener noreferrer">
+            <img src="${thumbnail}" alt="${video.name}" class="video__thumbnail">
+            <h2 class="video__title">${video.name}</h2>
+          </a>
         </li>
-    `
-    )
+      `;
+    })
     .join('');
 
-  movieListContainer.insertAdjacentHTML('beforeend', markup);
-}
-
-function clearMovieList() {
-  movieListContainer.innerHTML = '';
-}
-
-function togglePaginationButtons() {
-  prevButton.disabled = movieApiService.page <= 1;
+  videoList.insertAdjacentHTML('beforeend', markup);
 }

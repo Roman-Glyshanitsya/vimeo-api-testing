@@ -1,23 +1,29 @@
-const API_KEY = 'a44bb9523e0650c67fadd4918a95b1b0';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const ACCESS_TOKEN = '3aa55aba1526d1c592209a8290dc7b9f';
+const BASE_URL = 'https://api.vimeo.com';
 
-export default class MovieApiService {
+export default class VideoApiService {
   constructor() {
     this.page = 1;
+    this.perPage = 5; // Кількість відео на сторінку
   }
 
-  fetchMovies() {
-    const url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${this.page}`;
+  fetchVideos() {
+    const url = `${BASE_URL}/videos?page=${this.page}&per_page=${this.perPage}`;
 
-    return fetch(url)
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+      },
+    })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Failed to fetch movies');
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
-        return data.results;
+        this.incrementPage();
+        return data.data; // Масив відео
       });
   }
 
@@ -25,9 +31,7 @@ export default class MovieApiService {
     this.page += 1;
   }
 
-  decrementPage() {
-    if (this.page > 1) {
-      this.page -= 1;
-    }
+  resetPage() {
+    this.page = 1;
   }
 }
